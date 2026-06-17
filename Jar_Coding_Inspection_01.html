@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>F&P Coding Inspection - Base64 Optimized</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blue:#1565c0;--blue-mid:#1976d2;--blue-soft:#e3f0fb;
+  --teal:#00838f;--green:#2e7d32;--red:#c62828;--purple:#6a1b9a;
+  --g50:#f8f9fb;--g100:#f1f3f7;--g200:#e4e8ef;--g400:#9aa5b4;--g600:#596475;--g900:#1a202c;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --sh-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06);
+  --sh-lg:0 8px 30px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);
+  --r-sm:8px;--r-md:12px;--r-lg:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',Arial,sans-serif;background:linear-gradient(135deg,#e3f0fb 0%,#f8f9fb 60%,#e0f7fa 100%);min-height:100vh;color:var(--g900);}
+.page{display:none;}.page.active{display:block;}
+.hidden{display:none!important;}
+
+/* ── PAGE 1 ── */
+.p1-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
+.setup-card{background:#fff;border-radius:var(--r-lg);box-shadow:var(--sh-lg);width:100%;max-width:440px;overflow:hidden;}
+.setup-hdr{background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);padding:30px 32px 26px;text-align:center;color:#fff;}
+.setup-hdr .ico{width:52px;height:52px;background:rgba(255,255,255,.18);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;}
+.setup-hdr h1{font-size:20px;font-weight:700;margin-bottom:4px;}
+.setup-hdr p{font-size:13px;opacity:.8;}
+.setup-body{padding:26px 26px 22px;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--g600);margin-bottom:6px;}
+.fg select,.fg input[type=date]{
+  width:100%;padding:11px 14px;font-size:16px;font-family:'Inter',sans-serif;
+  border:1.5px solid var(--g200);border-radius:var(--r-sm);background:#fff;color:var(--g900);
+  transition:border-color .2s,box-shadow .2s;outline:none;appearance:none;-webkit-appearance:none;
+}
+.fg select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa5b4' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:38px;}
+.fg select:focus,.fg input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(25,118,210,.12);}
+@supports (-webkit-touch-callout: none){
+  .fg select{-webkit-appearance:menulist-button;appearance:menulist-button;background-image:none;padding-right:14px;}
+}
+.fmt-btns,.mat-btns{display:flex;flex-wrap:wrap;gap:8px;}
+.fmt-btn{padding:10px 18px;font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;border:2px solid var(--g200);border-radius:var(--r-sm);background:#fff;color:var(--g600);cursor:pointer;transition:all .18s;letter-spacing:.5px;}
+.fmt-btn:hover{border-color:var(--blue-mid);color:var(--blue);background:var(--blue-soft);}
+.fmt-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(21,101,192,.25);}
+.mat-btn{padding:8px 14px;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;border:2px solid var(--g200);border-radius:var(--r-sm);background:#fff;color:var(--g600);cursor:pointer;transition:all .18s;}
+.mat-btn:hover{border-color:var(--teal);color:var(--teal);background:#e0f7fa;}
+.mat-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);box-shadow:0 2px 8px rgba(0,131,143,.25);}
+.btn-row{display:flex;gap:10px;}
+.btn{flex:1;padding:13px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;border:none;border-radius:var(--r-sm);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-t{background:var(--teal);color:#fff;}.btn-t:hover{background:#00696f;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,131,143,.3);}
+.btn-b{background:var(--blue);color:#fff;}.btn-b:hover{background:#0d47a1;transform:translateY(-1px);box-shadow:0 4px 12px rgba(21,101,192,.3);}
+#result{margin-top:16px;border-radius:var(--r-md);overflow:hidden;border:1.5px solid var(--g200);display:none;}
+.ri{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--g200);background:#fff;}
+.ri:last-child{border-bottom:none;}.ri:nth-child(even){background:var(--g50);}
+.rl{color:var(--g600);font-weight:500;}.rv{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px;}
+.badge{background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;}
+
+/* ── PAGE 2 ── */
+.p2-wrap{min-height:100vh;display:flex;flex-direction:column;}
+.p2-topbar{background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;box-shadow:var(--sh-md);}
+.back-btn{background:rgba(255,255,255,.18);border:none;color:#fff;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;transition:background .15s;}
+.back-btn:hover{background:rgba(255,255,255,.28);}
+.tb-info{flex:1;min-width:0;}
+.tb-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+.tb-sub{font-size:11px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.p2-body{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;max-width:1080px;width:100%;margin:0 auto;}
+
+/* Action bar */
+.act-bar{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0 2px;}
+.ab{padding:10px 16px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;border:none;border-radius:var(--r-sm);cursor:pointer;color:#fff;display:flex;align-items:center;gap:5px;transition:opacity .15s,transform .15s;white-space:nowrap;}
+.ab:hover{opacity:.85;transform:translateY(-1px);}
+.ab-org{background:#ea6c1d;}.ab-tl{background:var(--teal);}.ab-gr{background:var(--green);}.ab-pu{background:var(--purple);}.ab-rd{background:var(--red);}.ab-bl{background:#0d47a1;}
+
+/* ── CHECK PANEL ── */
+.check-panel{background:#111827;border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-md);}
+.check-panel-inner{display:flex;align-items:center;gap:10px;}
+.check-icon-big{font-size:28px;flex-shrink:0;width:40px;text-align:center;}
+.check-indicators{flex:1;display:flex;flex-direction:column;gap:8px;}
+.ind{border-radius:var(--r-sm);padding:10px 14px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.5px;transition:all .3s;border:2px solid transparent;}
+.ind-lbl{font-size:10px;font-weight:600;letter-spacing:.8px;opacity:.6;margin-bottom:3px;text-transform:uppercase;font-family:'Inter',sans-serif;}
+.ind-val{font-size:14px;}
+.ig{background:#1f2937;color:#9ca3af;border-color:#374151;}
+.igreen{background:#052e16;color:#4ade80;border-color:#166534;box-shadow:0 0 14px rgba(74,222,128,.2);}
+.ired{background:#450a0a;color:#f87171;border-color:#7f1d1d;box-shadow:0 0 14px rgba(248,113,113,.2);}
+
+/* ── CAMERA CARD ── */
+.cam-card{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-sm);overflow:hidden;border:1.5px solid var(--g200);}
+.cam-hdr{padding:9px 14px;background:var(--g50);border-bottom:1px solid var(--g200);font-size:12px;font-weight:600;color:var(--g600);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.3);flex-shrink:0;}
+@keyframes dotpulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.3);}50%{box-shadow:0 0 0 5px rgba(34,197,94,.1);}}
+.live-dot.active{animation:dotpulse 1.5s infinite;}
+
+.media-wrap{position:relative;background:#0f1117;line-height:0;}
+#video{width:100%;display:block;max-height:400px;object-fit:contain;background:#0f1117;}
+#rawCanvas{width:100%;display:block;background:#0f1117;}
+#procCanvas{width:100%;display:block;background:#000;}
+
+#cropOverlay{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  cursor:crosshair;
+  touch-action:none;
+  z-index:10;
+}
+
+.cam-tip{padding:9px 14px;font-size:12px;color:var(--g600);background:var(--blue-soft);border-top:1px solid #c8dff7;line-height:1.5;}
+.cam-tip strong{color:var(--blue);}
+
+/* status */
+.status-bar{background:#fff;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--g600);border:1.5px solid var(--g200);display:flex;align-items:center;gap:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:13px;height:13px;border:2px solid var(--g200);border-top-color:var(--blue-mid);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;margin-left:auto;}
+
+/* OCR box */
+.ocr-box{background:#fff;border-radius:var(--r-md);border:1.5px solid var(--g200);overflow:hidden;}
+.ocr-hdr{padding:9px 14px;background:var(--g50);border-bottom:1px solid var(--g200);font-size:12px;font-weight:600;color:var(--g600);text-transform:uppercase;letter-spacing:.6px;}
+.ocr-text{padding:12px 14px;min-height:58px;font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--g600);line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+</style>
+</head>
+<body>
+
+<div id="page1" class="page active">
+<div class="p1-wrap"><div class="setup-card">
+  <div class="setup-hdr">
+    <div class="ico">🔍</div>
+    <h1>F&amp;P Coding Inspection</h1>
+    <p>Kiểm tra mã date &amp; batch trên bao bì</p>
+  </div>
+  <div class="setup-body">
+    <div class="fg">
+      <label>Ngày sản xuất</label>
+      <input type="date" id="prodDate"/>
+    </div>
+    <div class="fg">
+      <label>Chọn Format ID</label>
+      <div class="fmt-btns" id="fmtBtns">
+        <button class="fmt-btn" onclick="selectFormat('NESA')">NESA</button>
+        <button class="fmt-btn" onclick="selectFormat('AUNZ')">AUNZ</button>
+        <button class="fmt-btn" onclick="selectFormat('PH')">PH</button>
+        <button class="fmt-btn" onclick="selectFormat('IN')">IN</button>
+        <button class="fmt-btn" onclick="selectFormat('KR')">KR</button>
+      </div>
+    </div>
+    <div class="fg" id="materialFg" style="display:none">
+      <label id="materialLabel">Chọn Material</label>
+      <div class="mat-btns" id="matBtns"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-t" onclick="showData()">📋 Xem thông tin</button>
+      <button class="btn btn-b" onclick="goCheck()">📷 Check OCR</button>
+    </div>
+    <div id="result"></div>
+  </div>
+</div></div>
+</div>
+
+<div id="page2" class="page">
+<div class="p2-wrap">
+  <div class="p2-topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-info">
+      <div class="tb-title">Check OCR</div>
+      <div class="tb-sub" id="infoBar">Material: -</div>
+    </div>
+  </div>
+
+  <div class="p2-body">
+    <div class="check-panel">
+      <div class="check-panel-inner">
+        <div class="check-icon-big" id="checkIcon">🔎</div>
+        <div class="check-indicators">
+          <div class="ind ig" id="sledBox">
+            <div class="ind-lbl">SLED</div>
+            <div class="ind-val" id="sledVal">—</div>
+          </div>
+          <div class="ind ig" id="batchBox">
+            <div class="ind-lbl">Batch</div>
+            <div class="ind-val" id="batchVal">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cam-card">
+      <div class="cam-hdr">
+        <span class="live-dot active" id="liveDot"></span>
+        <span id="camLabel">Camera Live</span>
+      </div>
+      <div class="media-wrap" id="mediaWrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="rawCanvas" class="hidden"></canvas>
+        <canvas id="cropOverlay" class="hidden"></canvas>
+        <canvas id="procCanvas" class="hidden"></canvas>
+      </div>
+      <div class="cam-tip" id="camTip"><strong>Hướng dẫn:</strong> Bấm Chụp hoặc Upload ảnh để bắt đầu kiểm tra OCR.</div>
+    </div>
+
+    <div class="act-bar">
+      <button class="ab ab-org" id="btnCapture" onclick="captureAndPrepare()">📷 Chụp</button>
+      <button class="ab ab-tl"  id="btnUpload"  onclick="document.getElementById('fileInput').click()">📁 Upload</button>
+      <button class="ab ab-pu hidden" id="btnConfirmCrop" onclick="confirmCropAndOCR()">✅ Xác nhận &amp; OCR</button>
+      <button class="ab ab-rd hidden" id="btnResetCrop"   onclick="resetCropSelection()">✖ Reset crop</button>
+      <button class="ab ab-gr hidden" id="btnRetake"      onclick="retake()">🔄 Chụp lại</button>
+      <button class="ab ab-org hidden" id="btnReCrop"     onclick="backToCrop()">✂️ Crop lại</button>
+      <button class="ab ab-bl hidden" id="btnEmail"       onclick="sendEmailSilent()">📧 Gửi Email Luôn</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" class="hidden"/>
+
+    <div class="status-bar">
+      <span id="statusIcon">⏳</span>
+      <span id="status">Đang mở camera...</span>
+      <div id="statusSpinner" class="spinner hidden"></div>
+    </div>
+
+    <div class="ocr-box">
+      <div class="ocr-hdr">Kết quả OCR thô</div>
+      <div class="ocr-text" id="ocrResult">Kết quả OCR sẽ hiển thị ở đây...</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ══ DATA ══ */
+var DATA=[
+  {Title:"12691003",Case_id:"18801100000000",Label_id:"8801060000000",Format_id:"NESA"},
+  {Title:"12691002",Case_id:"18801100000000",Label_id:"8801060000000",Format_id:"NESA"},
+  {Title:"12691004",Case_id:"18801100000000",Label_id:"8801060000000",Format_id:"IN"},
+  {Title:"12690651",Case_id:"7613040000000", Label_id:"93625364",     Format_id:"AUNZ"},
+  {Title:"12691012",Case_id:"7613040000000", Label_id:"93625269",     Format_id:"AUNZ"},
+  {Title:"12691010",Case_id:"07613036395526",Label_id:"93625296",     Format_id:"AUNZ"},
+  {Title:"12690650",Case_id:"7613040000000", Label_id:"93625340",     Format_id:"AUNZ"},
+  {Title:"12690652",Case_id:"7613040000000", Label_id:"93625340",     Format_id:"AUNZ"},
+  {Title:"12690988",Case_id:"18801100000000",Label_id:"8801055709267",Format_id:"PH"},
+  {Title:"12690655",Case_id:"18801100000000",Label_id:"8801055709083",Format_id:"PH"},
+  {Title:"12690986",Case_id:"7613040000000", Label_id:"93625302",     Format_id:"AUNZ"},
+  {Title:"12691011",Case_id:"7613040000000", Label_id:"93625302",     Format_id:"AUNZ"},
+  {Title:"12632510",Case_id:"7613040000000", Label_id:"93625333",     Format_id:"AUNZ"},
+  {Title:"12690607",Case_id:"7613040000000", Label_id:"93625333",     Format_id:"AUNZ"},
+  {Title:"12690989",Case_id:"18801055709257",Label_id:"8801055709250",Format_id:"PH"},
+  {Title:"12691006",Case_id:"18801055724618",Label_id:"8801055724611",Format_id:"IN"},
+  {Title:"12691020",Case_id:"18801055706454",Label_id:"8801055706457",Format_id:"NESA"},
+  {Title:"12691014",Case_id:"18801055706607",Label_id:"8801055706600",Format_id:"NESA"},
+  {Title:"12691027",Case_id:"18801055709264",Label_id:"8801055709267",Format_id:"NESA"},
+  {Title:"12690606",Case_id:"18801055724199",Label_id:"8801055724192",Format_id:"KR"},
+  {Title:"12690653",Case_id:"18801100000000",Label_id:"8801055706457",Format_id:"PH"},
+  {Title:"12690654",Case_id:"18801100000000",Label_id:"8801055706419",Format_id:"PH"},
+  {Title:"12691000",Case_id:"18801100000000",Label_id:"8801055709281",Format_id:"PH"},
+  {Title:"12691023",Case_id:"18801055706416",Label_id:"8801055706419",Format_id:"NESA"}
+];
+var MON=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+/* ══ STATE ══ */
+var selItem=null, expSLED="", expBatch="", expTime="", camStream=null, imgReady=false, currentStatusText="—";
+var dragOn=false, sx=0,sy=0,ex=0,ey=0;
+
+/* ══ DOM refs ══ */
+var video       = document.getElementById("video");
+var rawCanvas   = document.getElementById("rawCanvas");
+var rawCtx      = rawCanvas.getContext("2d",{willReadFrequently:true});
+var procCanvas  = document.getElementById("procCanvas");
+var procCtx     = procCanvas.getContext("2d",{willReadFrequently:true});
+var cropCanvas  = document.getElementById("cropOverlay");
+var cropCtx     = cropCanvas.getContext("2d");
+
+function $(id){return document.getElementById(id);}
+function show(id){$(id).classList.remove("hidden");}
+function hide(id){$(id).classList.add("hidden");}
+
+function julianDay(ds){
+  var d=new Date(ds), s=new Date(d.getFullYear(),0,0);
+  return Math.floor((d-s)/86400000);
+}
+function calcBatch(ds){
+  var d=new Date(ds);
+  return String(d.getFullYear()).slice(-1)+String(julianDay(ds)).padStart(3,"0")+"6589V";
+}
+function calcSLED(ds,fmt){
+  var d=new Date(ds), e=new Date(d); e.setFullYear(e.getFullYear()+2);
+  var yy=String(d.getFullYear()).slice(-2), mon=MON[d.getMonth()];
+  var edd=String(e.getDate()).padStart(2,"0"), emm=String(e.getMonth()+1).padStart(2,"0");
+  var eyyyy=String(e.getFullYear()), eyy=eyyyy.slice(-2), emon=MON[e.getMonth()];
+  switch(fmt){
+    case "AUNZ": return emon+" "+eyyyy;
+    case "PH":   return edd+" "+emon+" "+eyyyy;
+    case "NESA": return edd+"."+emm+"."+eyyyy;
+    case "IN":   return mon+"/"+yy+"-"+emon+"/"+eyy;
+    case "KR":   return eyyyy+"."+emm+"."+edd;
+    default:     return edd+"."+emm+"."+eyyyy;
+  }
+}
+function nowHHMM(){
+  var n=new Date();
+  return String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
+}
+var selTitle="";
+
+function selectFormat(fmt){
+  selTitle="";
+  document.querySelectorAll(".fmt-btn").forEach(function(b){
+    b.classList.toggle("active", b.textContent===fmt);
+  });
+  var mb=document.getElementById("matBtns");
+  mb.innerHTML="";
+  DATA.filter(function(d){return d.Format_id===fmt;}).forEach(function(d){
+    var b=document.createElement("button");
+    b.className="mat-btn"; b.textContent=d.Title;
+    b.onclick=function(){selectMaterial(d.Title);};
+    mb.appendChild(b);
+  });
+  document.getElementById("materialLabel").textContent="Chọn Material ("+fmt+")";
+  document.getElementById("materialFg").style.display="block";
+  document.getElementById("result").style.display="none";
+}
+function selectMaterial(title){
+  selTitle=title;
+  document.querySelectorAll(".mat-btn").forEach(function(b){
+    b.classList.toggle("active", b.textContent===title);
+  });
+}
+function getItem(){
+  return DATA.find(function(d){return d.Title===selTitle;})||null;
+}
+function setStatus(icon,msg,spin){
+  $("statusIcon").textContent=icon;
+  $("status").textContent=msg;
+  spin ? show("statusSpinner") : hide("statusSpinner");
+}
+function setInd(boxId,valId,text,state){
+  var box=$(boxId); box.className="ind "+{gray:"ig",green:"igreen",red:"ired"}[state];
+  $(valId).textContent=text||"—";
+}
+function initIndicators(){
+  setInd("sledBox","sledVal",expSLED||"SLED","gray");
+  setInd("batchBox","batchVal",expBatch||"Batch","gray");
+  $("checkIcon").textContent="🔎";
+  currentStatusText="—";
+}
+
+/* ══ INIT ══ */
+window.onload=function(){
+  var today=new Date();
+  $("prodDate").value=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+  $("fileInput").addEventListener("change",handleUpload);
+  bindCropEvents();
+  if(typeof emailjs !== 'undefined') {
+     emailjs.init({ publicKey: "_UGv7FajVWpF-1z0z" }); 
+  }
+};
+
+function showData(){
+  var item=getItem(); if(!item){alert("Chọn Material!");return;}
+  var pd=$("prodDate").value; if(!pd){alert("Chọn ngày!");return;}
+  var sled=calcSLED(pd,item.Format_id), batch=calcBatch(pd);
+  var r=$("result"); r.style.display="block";
+  r.innerHTML=[
+    ["Material",item.Title],["Case ID",item.Case_id],
+    ["Label ID",item.Label_id],["Format",item.Format_id]
+  ].map(function(p){
+    return '<div class="ri"><span class="rl">'+p[0]+'</span><span class="rv">'+p[1]+'</span></div>';
+  }).join("")+
+  '<div class="ri"><span class="rl">SLED</span><span class="badge">'+sled+'</span></div>'+
+  '<div class="ri"><span class="rl">Batch</span><span class="badge">'+batch+'</span></div>';
+}
+function goCheck(){
+  var item=getItem(); if(!item){alert("Chọn Material!");return;}
+  var pd=$("prodDate").value; if(!pd){alert("Chọn ngày!");return;}
+  selItem=item; expSLED=calcSLED(pd,item.Format_id); expBatch=calcBatch(pd);
+  $("infoBar").textContent=item.Title+" · "+item.Format_id+" · "+item.Case_id;
+  initIndicators();
+  $("page1").classList.remove("active");
+  $("page2").classList.add("active");
+  resetVisualState();
+  startCamera();
+}
+function goBack(){
+  stopCamera();
+  $("page2").classList.remove("active");
+  $("page1").classList.add("active");
+}
+
+function startCamera(){
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false})
+    .then(function(s){
+      camStream=s; video.srcObject=s;
+      setStatus("📷","Camera đã mở",false);
+      $("liveDot").className="live-dot active";
+    })
+    .catch(function(err){setStatus("❌","Lỗi camera: "+err.message,false);});
+}
+function stopCamera(){
+  if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;video.srcObject=null;}
+}
+function captureAndPrepare(){
+  if(!video.srcObject){alert("Camera chưa sẵn sàng!");return;}
+  var w=video.videoWidth||1280, h=video.videoHeight||720;
+  rawCanvas.width=w; rawCanvas.height=h;
+  rawCtx.clearRect(0,0,w,h); rawCtx.drawImage(video,0,0,w,h);
+  prepareCapturedImage("Ảnh đã chụp");
+}
+
+function handleUpload(e){
+  var file=e.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      rawCanvas.width=img.width; rawCanvas.height=img.height;
+      rawCtx.clearRect(0,0,img.width,img.height);
+      rawCtx.drawImage(img,0,0,img.width,img.height);
+      prepareCapturedImage("Ảnh đã upload");
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file); e.target.value="";
+}
+
+function prepareCapturedImage(label){
+  imgReady=true;
+  hide("video"); show("rawCanvas");
+  $("camLabel").textContent=label;
+  $("liveDot").className="live-dot"; $("liveDot").style.background="#f59e0b";
+  setStatus("✏️","Kéo khung đỏ để crop, rồi bấm Xác nhận & OCR",false);
+  
+  hide("btnCapture"); hide("btnUpload");
+  show("btnConfirmCrop"); show("btnResetCrop");
+  hide("btnRetake"); hide("btnReCrop"); hide("btnEmail");
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ fitCropOverlay(); });
+  });
+}
+function retake(){
+  if(camStream){ show("video"); } else { startCamera(); show("video"); }
+  hide("rawCanvas"); hide("cropOverlay"); hide("procCanvas");
+  $("camLabel").textContent="Camera Live";
+  $("liveDot").className="live-dot active"; $("liveDot").style.background="";
+  initIndicators();
+  $("ocrResult").textContent="Kết quả OCR sẽ hiển thị ở đây...";
+  setStatus("📷","Camera Live",false);
+  imgReady=false; resetCropData();
+
+  show("btnCapture"); show("btnUpload");
+  hide("btnConfirmCrop"); hide("btnResetCrop");
+  hide("btnRetake"); hide("btnReCrop"); hide("btnEmail");
+}
+function resetVisualState(){
+  imgReady=false; resetCropData();
+  show("video"); hide("rawCanvas"); hide("cropOverlay"); hide("procCanvas");
+  $("camLabel").textContent="Camera Live";
+  $("ocrResult").textContent="Kết quả OCR sẽ hiển thị ở đây...";
+  setStatus("⏳","Đang mở camera...",false);
+
+  show("btnCapture"); show("btnUpload");
+  hide("btnConfirmCrop"); hide("btnResetCrop");
+  hide("btnRetake"); hide("btnReCrop"); hide("btnEmail");
+}
+
+function fitCropOverlay(){
+  cropCanvas.width  = rawCanvas.width;
+  cropCanvas.height = rawCanvas.height;
+  show("cropOverlay");
+  cropCtx.clearRect(0,0,cropCanvas.width,cropCanvas.height);
+}
+function bindCropEvents(){
+  cropCanvas.addEventListener("mousedown", onCropStart);
+  cropCanvas.addEventListener("mousemove", onCropMove);
+  cropCanvas.addEventListener("mouseup",   onCropEnd);
+  cropCanvas.addEventListener("mouseleave",onCropEnd);
+  cropCanvas.addEventListener("touchstart",onCropTouchStart,{passive:false});
+  cropCanvas.addEventListener("touchmove", onCropTouchMove, {passive:false});
+  cropCanvas.addEventListener("touchend",  onCropEnd,       {passive:false});
+}
+function ptToCanvas(clientX,clientY){
+  var r=cropCanvas.getBoundingClientRect();
+  var scaleX=cropCanvas.width /r.width;
+  var scaleY=cropCanvas.height/r.height;
+  return {x:(clientX-r.left)*scaleX, y:(clientY-r.top)*scaleY};
+}
+function onCropStart(e){
+  if(!imgReady)return; dragOn=true;
+  var p=ptToCanvas(e.clientX,e.clientY); sx=ex=p.x; sy=ey=p.y; drawCrop();
+}
+function onCropMove(e){
+  if(!dragOn)return;
+  var p=ptToCanvas(e.clientX,e.clientY); ex=p.x; ey=p.y; drawCrop();
+}
+function onCropTouchStart(e){
+  if(!imgReady)return; e.preventDefault(); dragOn=true;
+  var t=e.touches[0], p=ptToCanvas(t.clientX,t.clientY); sx=ex=p.x; sy=ey=p.y; drawCrop();
+}
+function onCropTouchMove(e){
+  if(!dragOn)return; e.preventDefault();
+  var t=e.touches[0], p=ptToCanvas(t.clientX,t.clientY); sx=ex=p.x; sy=ey=p.y; drawCrop();
+}
+function onCropEnd(){ if(!dragOn)return; dragOn=false; drawCrop(); }
+
+function drawCrop(){
+  cropCtx.clearRect(0,0,cropCanvas.width,cropCanvas.height);
+  var x=Math.min(sx,ex), y=Math.min(sy,ey);
+  var w=Math.abs(ex-sx),  h=Math.abs(ey-sy);
+  if(w<2||h<2) return;
+  cropCtx.fillStyle="rgba(0,0,0,0.35)";
+  cropCtx.fillRect(0,0,cropCanvas.width,cropCanvas.height);
+  cropCtx.clearRect(x,y,w,h);
+  cropCtx.strokeStyle="#ff3333"; cropCtx.lineWidth=Math.max(2,cropCanvas.width/300);
+  cropCtx.setLineDash([10,6]); cropCtx.strokeRect(x,y,w,h); cropCtx.setLineDash([]);
+  var hs=Math.max(8,cropCanvas.width/80);
+  cropCtx.fillStyle="#ff3333";
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(function(c){
+    cropCtx.fillRect(c[0]-hs/2,c[1]-hs/2,hs,hs);
+  });
+}
+function resetCropData(){ sx=sy=ex=ey=0; cropCtx.clearRect(0,0,cropCanvas.width,cropCanvas.height); }
+function resetCropSelection(){ resetCropData(); }
+
+function getUserCropRect(){
+  var x=Math.min(sx,ex), y=Math.min(sy,ey);
+  var w=Math.abs(ex-sx),  h=Math.abs(ey-sy);
+  if(w<20||h<20) return null;
+  return {x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h)};
+}
+
+function autoCropDark(src){
+  var w=src.width,h=src.height;
+  var tmp=document.createElement("canvas"); tmp.width=w; tmp.height=h;
+  var tc=tmp.getContext("2d",{willReadFrequently:true}); tc.drawImage(src,0,0);
+  var d=tc.getImageData(0,0,w,h).data;
+  var thr=80,minX=w,minY=h,maxX=0,maxY=0,cnt=0;
+  for(var yy=0;yy<h;yy++) for(var xx=0;xx<w;xx++){
+    var i=(yy*w+xx)*4, g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    if(g<thr){if(xx<minX)minX=xx;if(xx>maxX)maxX=xx;if(yy<minY)minY=yy;if(yy>maxY)maxY=yy;cnt++;}
+  }
+  var pad=15;
+  if(cnt<500||(maxX-minX)<20||(maxY-minY)<10){minX=0;minY=0;maxX=w;maxY=h;pad=0;}
+  var cx=Math.max(0,minX-pad), cy=Math.max(0,minY-pad);
+  return processArea(src,cx,cy,Math.min(w,maxX+pad)-cx,Math.min(h,maxY+pad)-cy);
+}
+function cropAndProcess(src){
+  var r=getUserCropRect();
+  return r ? processArea(src,r.x,r.y,r.w,r.h) : autoCropDark(src);
+}
+function processArea(src,x,y,w,h){
+  procCanvas.width=w; procCanvas.height=h;
+  procCtx.clearRect(0,0,w,h);
+  procCtx.drawImage(src,x,y,w,h,0,0,w,h);
+  var imgData = procCtx.getImageData(0,0,w,h);
+  var data = imgData.data;
+  var contrast = 35; 
+  var factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+  var grayBuffer = new Uint8Array(w * h);
+  for(var i=0; i<data.length; i+=4) {
+    var g = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+    g = factor * (g - 128) + 128;
+    g = Math.max(0, Math.min(255, g));
+    grayBuffer[i/4] = g;
+  }
+  var histogram = new Array(256).fill(0);
+  for(var i=0; i<grayBuffer.length; i++) histogram[grayBuffer[i]]++;
+  var total = grayBuffer.length;
+  var sum = 0;
+  for (var t=0; t<256; t++) sum += t * histogram[t];
+  var sumB = 0, wB = 0, wF = 0;
+  var varMax = 0, threshold = 128;
+  for (var t=0; t<256; t++) {
+    wB += histogram[t];
+    if (wB == 0) continue;
+    wF = total - wB;
+    if (wF == 0) break;
+    sumB += t * histogram[t];
+    var mB = sumB / wB;
+    var mF = (sum - sumB) / wF;
+    var varBetween = wB * wF * (mB - mF) * (mB - mF);
+    if (varBetween > varMax) {
+      varMax = varBetween;
+      threshold = t;
+    }
+  }
+  for(var i=0; i<data.length; i+=4) {
+    var g = grayBuffer[i/4];
+    var v = (g >= threshold) ? 255 : 0; 
+    data[i] = data[i+1] = data[i+2] = v; 
+    data[i+3] = 255;
+  }
+  procCtx.putImageData(imgData,0,0);
+  return procCanvas;
+}
+
+function confirmCropAndOCR(){
+  if(!imgReady){alert("Chưa có ảnh! Vui lòng Chụp hoặc Upload ảnh trước.");return;} runOCR();
+}
+
+function runOCR(){
+  expTime=nowHHMM();
+  setInd("sledBox","sledVal",expSLED,"gray");
+  setInd("batchBox","batchVal",expBatch,"gray");
+  $("checkIcon").textContent="⏳";
+  cropAndProcess(rawCanvas);
+  hide("rawCanvas"); hide("cropOverlay");
+  show("procCanvas");
+  $("camLabel").textContent="Ảnh đã xử lý đơn sắc (gửi OCR)";
+  $("ocrResult").textContent="Đang nhận diện ký tự...";
+  setStatus("🔍","Đang OCR...",true);
+
+  var charWhitelist = "0123456789ABCDEFGHIJKLMOPQRSTUVWXYZ./- ";
+  Tesseract.recognize(procCanvas,"eng",{
+    tessedit_char_whitelist: charWhitelist,
+    tessedit_pageseg_mode: "6", 
+    logger:function(m){
+      if(m.status) setStatus("🔍","OCR: "+m.status+(m.progress?" "+Math.round(m.progress*100)+"%" :""),true);
+    }
+  }).then(function(r){
+    var text=r.data.text||"";
+    $("ocrResult").textContent=text;
+    setStatus("✅","OCR hoàn tất — bấm Gửi Email, Crop lại hoặc Chụp lại",false);
+    
+    var cl=text.replace(/\s+/g," ").toUpperCase().trim();
+    function ns(s){return(s||"").replace(/[\s\-]/g,"");}
+    
+    var sledOk  = expSLED  && cl.indexOf(expSLED.toUpperCase())>=0;
+    var batchOk = expBatch && ns(cl).indexOf(ns(expBatch))>=0;
+    
+    setInd("sledBox","sledVal",expSLED,sledOk?"green":"red");
+    setInd("batchBox","batchVal",expBatch,batchOk?"green":"red");
+    
+    var isOk = (sledOk && batchOk);
+    $("checkIcon").textContent = isOk ? "✅" : "⚠️";
+    currentStatusText = isOk ? "OK (Đạt)" : "NG (Lỗi / Không khớp)";
+
+    hide("btnConfirmCrop"); hide("btnResetCrop");
+    show("btnRetake"); show("btnReCrop"); show("btnEmail");
+
+  }).catch(function(err){
+    $("ocrResult").textContent="Lỗi OCR: "+err.message;
+    setStatus("❌","OCR lỗi",false);
+    ["sledBox","batchBox"].forEach(function(id){
+      var vid=id.replace("Box","Val");
+      setInd(id,vid,$(vid).textContent,"red");
+    });
+    $("checkIcon").textContent="❌";
+    currentStatusText = "LỖI KIỂM TRA";
+
+    hide("btnConfirmCrop"); hide("btnResetCrop");
+    show("btnRetake"); show("btnReCrop"); show("btnEmail");
+  });
+}
+
+function backToCrop(){
+  hide("procCanvas"); show("rawCanvas"); show("cropOverlay");
+  $("camLabel").textContent="Chọn lại vùng crop";
+  setStatus("✏️","Kéo lại khung đỏ rồi bấm Xác nhận & OCR",false);
+  setInd("sledBox","sledVal",expSLED,"gray");
+  setInd("batchBox","batchVal",expBatch,"gray");
+  $("checkIcon").textContent="🔎";
+  currentStatusText = "—";
+
+  hide("btnReCrop"); hide("btnRetake"); hide("btnEmail");
+  show("btnConfirmCrop"); show("btnResetCrop");
+}
+
+/* ══ ĐÃ CẬP NHẬT: PHƯƠNG PHÁP SIÊU NÉN ẢNH BASE64 TRÁNH LỖI API ══ */
+function sendEmailSilent() {
+  if (!selItem) { alert("Không tìm thấy dữ liệu kiểm tra!"); return; }
+  if (typeof emailjs === 'undefined') { alert("Thư viện EmailJS chưa được cấu hình chính xác!"); return; }
+  
+  setStatus("📧", "Đang nén tối ưu ảnh và gửi báo cáo ngầm...", true);
+  $("btnEmail").disabled = true;
+  $("btnEmail").style.opacity = "0.5";
+
+  var rawOcrText = $("ocrResult").textContent;
+  
+  // TỐI ƯU HÓA SIÊU NÉN: Hạ độ rộng ảnh xuống hẳn 400px để chuỗi Base64 cực kỳ ngắn (~10KB)
+  var emailCanvas = document.createElement("canvas");
+  var emailCtx = emailCanvas.getContext("2d");
+  var maxW = 400; 
+  var scale = Math.min(1, maxW / rawCanvas.width);
+  emailCanvas.width = rawCanvas.width * scale;
+  emailCanvas.height = rawCanvas.height * scale;
+  
+  emailCtx.drawImage(rawCanvas, 0, 0, emailCanvas.width, emailCanvas.height);
+  
+  // Nén chất lượng ảnh xuống 40% (vẫn xem rõ nội dung, nhưng dung lượng siêu nhẹ)
+  var imgBase64 = emailCanvas.toDataURL("image/jpeg", 0.4);
+
+  var templateParams = {
+    to_email: "SenVan.Quy@vn.nestle.com",
+    subject: "[Báo cáo OCR] Kết quả kiểm tra Material " + selItem.Title + " - " + currentStatusText,
+    material_title: selItem.Title,
+    format_id: selItem.Format_id,
+    case_id: selItem.Case_id,
+    label_id: selItem.Label_id,
+    expected_sled: expSLED,
+    expected_batch: expBatch,
+    evaluation_result: currentStatusText,
+    raw_ocr_text: rawOcrText,
+    captured_image_base64: imgBase64 // Truyền trực tiếp chuỗi Base64 đã siêu nén
+  };
+
+  emailjs.send("service_m2viwv1", "template_41ka3fe", templateParams)
+    .then(function(response) {
+       setStatus("✅", "Đã gửi email kèm ảnh thành công tới SenVan.Quy!", false);
+       alert("Đã gửi email báo cáo kèm ảnh thành công!");
+       $("btnEmail").disabled = false;
+       $("btnEmail").style.opacity = "";
+    }, function(error) {
+       setStatus("❌", "Gửi email lỗi: " + error.text, false);
+       alert("Lỗi khi gửi email: " + JSON.stringify(error) + "\nGợi ý: Hãy kiểm tra xem bạn đã lưu Template trên EmailJS chưa.");
+       $("btnEmail").disabled = false;
+       $("btnEmail").style.opacity = "";
+    });
+}
+</script>
+</body>
+</html>
